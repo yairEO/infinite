@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html class="no-js">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>Endless Demo page - Yair Even-Or</title>
+        <meta name="description" content="">
+
+        <style>
+            body{ padding:0; margin:0; font:14px Arial; }
+            h1{ text-align:center; }
+            menu{ position:fixed; top:0; right:0; color:#FFF; background:#111; padding:10px; margin:0; }
+            menu > input{ margin-right:6px; }
+
+            footer{ position:fixed; bottom:0; left:0; right:0; background:rgba(255,0,0,0.1); }
+
+            .content{ position:relative; }
+
+            .content .item{ display:block; width:45%; height:100px; background:#EEE; border:2px solid #CCC; padding:10px; margin:10px auto; font-size:40px; color:#666; position:relative; cursor:pointer; transition:120ms; }
+            .content .item.small{ height:25px; font-size:11px; padding:0 5px; margin:1px auto; }
+            .content .open{ height:150px; background:#DDD; color:black; }
+            .content .last::after{ content:''; position:absolute; left:-20%; right:-20%; bottom:-8px; border-bottom:2px dashed red; }
+        </style>
+    </head>
+    <body>
+        <h1><a href='https://github.com/yairEO/endless/tree/gh-pages'>Endless</a> <small>scrolling</small></h1>
+        <section class='content'></section>
+        <!-- scripts -->
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script src="lodash.underscore.min.js"></script>
+        <script src="infinite.js"></script>
+        <script>
+
+            (function(){
+                "use strict";
+
+                var endlessElm = $(window),
+                    data = new Array(1000),
+                    endlessContainer = $('.content'), // where to put the items
+                    toggledItemsIndexes = {},
+                    infiniteOptions;
+
+
+                ////////////////////////////////////////////////
+                // init "infinite" plugin
+
+                infiniteOptions = {
+                    startIndex : window.location.hash.substring(1)|0,
+                    content    : endlessContainer,
+                    newPage    : newPage
+                };
+
+                endlessElm.infinite(infiniteOptions);
+
+                if( infiniteOptions.startIndex ){
+                    toggledItemsIndexes[infiniteOptions.startIndex] = true;
+                    endlessElm[0].scroll(0, $(endlessContainer[0].firstChild).offset().top - 10);
+                }
+
+                ////////////////////////////////////////////////
+                // open/close an item
+
+                endlessContainer.on('click', '.item', function(){
+                    var item = $(this),
+                        index = this.tabIndex;
+
+                    item.toggleClass('open');
+
+                    toggledItemsIndexes[index] = !toggledItemsIndexes[index];
+                });
+
+
+                ////////////////////////////////////////////////
+                // custom hashing location saving
+
+                endlessElm.on('scroll.infinit_location', _.debounce(saveLocation,100));
+
+                function saveLocation(){
+                    var distance;
+                    endlessContainer.children().each(function(){
+                        distance = this.getBoundingClientRect().top;
+                        if( distance > -30 ){
+                            window.location.hash = this.tabIndex;
+                            return false;
+                        }
+                        console.log(this);
+                    });
+                }
+
+
+                ////////////////////////////////////////////////
+                // returns a new page
+
+                function newPage(N){
+                    if( this.index >= data.length )
+                        return false;
+
+                    var html = '';
+
+                    N = N || this.settings.pageSize;
+
+                    while( N-- ){
+                        if( this.index == this.firstLastIndexes[0] && this.firstLastIndexes[0] || this.index == data.length )
+                            break;
+
+                        html += '<div class="item'+ (toggledItemsIndexes[this.index] ? ' open' : '') + (N == 0 ? ' last' : '') +'" tabindex="' + this.index + '"><b>' + this.index + '</b></div>';
+                        this.index++;
+                    }
+
+                    return $.parseHTML(html);
+                    return $('<div>').addClass('page').html(html);
+                }
+
+            })();
+
+            ////////////////////////////////////////////////
+            // jump back to top on page reload
+            // (must be set before reloading the page)
+
+            $(window).on('beforeunload', function(){
+                window.scroll(0,0);
+            })
+
+
+
+        </script>
+    </body>
+</html>
