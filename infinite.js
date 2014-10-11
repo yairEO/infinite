@@ -7,7 +7,7 @@
     var defaults = {
         startIndex : 0,    // the first index to render
         pageSize   : 10,   // # of items in a single batch
-        offset     : 200,  // the area from top and bottom of afterwhich to trigger new page render
+        offset     : 200,  // the area from top and bottom of after which to trigger new page render
         content    : null, // where the items should be appended to
         newPage    : null  // function which generates a whole page and returns it (as a jQuery object)
     }
@@ -15,16 +15,12 @@
     // jQuery plugin instantiation
     jQuery.fn.infinite = function(settings, cb){
         return this.each(function(){
-
-            var $el = $(this), // convert window to the HTML element
-                infinite;
+            var $el = $(this); // convert window to the HTML element
 
             if( $el.data('_infinite') )
                 return;
 
-            infinite = new Infinite($el, settings, cb);
-
-            $el.data('_infinite', infinite);
+            $el.data('_infinite', new Infinite($el, settings, cb));
         });
     }
 
@@ -37,7 +33,6 @@
         this.endlessContainer = settings.content || this.endlessElm;
 
         this.index             = settings.startIndex || 0;
-        this.lastContentHeight = 0;
         this.firstRenderedPage = null;
         this.lastScrollTop     = null;
         this.scrollY           = null;
@@ -151,7 +146,6 @@
                 viewHeight   = this.endlessElm[0].clientHeight;
                 totalHeight  = this.endlessElm[0].scrollHeight;
             }
-
 
             // scrolling down
             if( isScrollingDown ){
