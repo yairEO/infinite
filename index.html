@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html class="no-js">
+<html lang='en'>
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>Endless Demo page - Yair Even-Or</title>
+        <title>Infinite scrool demo page</title>
         <meta name="description" content="">
-
+        <meta name="viewport" content="width=device-width, user-scalable=no">
         <style>
             body{ padding:0; margin:0; font:14px Arial; }
             h1{ text-align:center; }
@@ -83,7 +83,6 @@
                             window.location.hash = this.tabIndex;
                             return false;
                         }
-                        console.log(this);
                     });
                 }
 
@@ -95,20 +94,20 @@
                     if( this.index >= data.length )
                         return false;
 
-                    var html = '';
+                    var html = '',
+                        index = this.index;
 
                     N = N || this.settings.pageSize;
 
                     while( N-- ){
-                        if( this.index == this.firstLastIndexes[0] && this.firstLastIndexes[0] || this.index == data.length )
+                        if( index == this.firstLastIndexes[0] && this.firstLastIndexes[0] || index == data.length )
                             break;
 
-                        html += '<div class="item'+ (toggledItemsIndexes[this.index] ? ' open' : '') + (N == 0 ? ' last' : '') +'" tabindex="' + this.index + '"><b>' + this.index + '</b></div>';
-                        this.index++;
+                        html += '<div class="item'+ (toggledItemsIndexes[index] ? ' open' : '') + (N == 0 ? ' last' : '') +'" tabindex="' + index + '"><b>' + index + '</b></div>';
+                        index++;
                     }
 
                     return $.parseHTML(html);
-                    return $('<div>').addClass('page').html(html);
                 }
 
             })();

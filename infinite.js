@@ -7,9 +7,9 @@
     var defaults = {
         startIndex : 0,    // the first index to render
         pageSize   : 10,   // # of items in a single batch
-        offset     : 200,   // the area from top and bottom of afterwhich to trigger new page render
-        content    : null,  // where the items should be appended to
-        newPage    : function(){}  // function which generates a whole page and returns it (as a jQuery object)
+        offset     : 200,  // the area from top and bottom of afterwhich to trigger new page render
+        content    : null, // where the items should be appended to
+        newPage    : null  // function which generates a whole page and returns it (as a jQuery object)
     }
 
     // jQuery plugin instantiation
@@ -37,7 +37,6 @@
         this.endlessContainer = settings.content || this.endlessElm;
 
         this.index             = settings.startIndex || 0;
-        this.pages             = []; // could only be 2 places in this array
         this.lastContentHeight = 0;
         this.firstRenderedPage = null;
         this.lastScrollTop     = null;
@@ -64,26 +63,24 @@
         addPage : function( method ){
             var index = this.index,
                 page, elmToRemove, height, tempItem,
+                N = this.settings.pageSize; // number of items to generate
 
             method = method || 'append';
 
+            // appending elements
             if( method == 'append' ){
-                // it must be written like so, because the very FIRST time, the "pages" array length is "1". else I could have written "this.pages[0]"...duh
-                elmToRemove = $(this.pages[this.pages.length - 2]);
+                tempItem = this.endlessContainer.children();
+                if( tempItem.length >= this.settings.pageSize * 2 )
+                    elmToRemove = tempItem.slice(0, this.settings.pageSize);
 
                 page = this.settings.newPage.call(this);
 
                 if( !page ) return;
 
-                if( this.pages.length == 2)
-                    this.pages.shift();
-                this.pages.push(page);
-
-                if( elmToRemove.length ){
+                if( elmToRemove ){
                     /* adjust scroll */
                     tempItem = elmToRemove.last();
                     height = tempItem.position().top + tempItem.outerHeight(true);
-
 
                     if( this.el[0] === window ){
                         docElm.scrollTop -= height;
@@ -96,22 +93,18 @@
                 }
 
                 this.endlessContainer[method]( page );
-
-                // update indexes
-                this.firstLastIndexes = [this.endlessContainer[0].firstChild.tabIndex, this.index];
             }
-            // prepending page
+            // prepending elements
             else{
                 if( index < 0 ) return;
 
-                page = this.settings.newPage.call(this);
+                N = this.settings.pageSize;
+                if( this.firstLastIndexes[0] < this.settings.pageSize )
+                    N = this.settings.pageSize - this.firstLastIndexes[0];
+
+                page = this.settings.newPage.call(this, N);
 
                 if( !page ) return;
-
-                elmToRemove = $(this.pages[1]);
-
-                this.pages.unshift(page);
-                this.pages.length = 2;
 
                 this.endlessContainer[method]( page );
 
@@ -126,11 +119,13 @@
                 else
                     this.endlessElm[0].scrollTop += height;
 
-                elmToRemove.remove();
-
-                 // update indexes
-                this.firstLastIndexes = [index, this.endlessContainer[0].lastChild.tabIndex + 1];
+                tempItem = this.endlessContainer.children().slice(-this.settings.pageSize);
+                tempItem.remove()
             }
+
+            // update indexes
+            tempItem = this.endlessContainer.children();
+            this.firstLastIndexes = [tempItem[0].tabIndex, tempItem.last()[0].tabIndex];
         },
 
         // onScroll/resize events callback
@@ -158,18 +153,17 @@
             }
 
 
-
             // scrolling down
             if( isScrollingDown ){
                 // if reached the point it should load the next page
                 if( this.scrollY + viewHeight + this.settings.offset >= totalHeight ){
-                    this.index = this.firstLastIndexes[1];
+                    this.index = this.firstLastIndexes[1] + 1;
 
                     this.addPage();
                 }
             }
             // scrolling up
-            else if( this.scrollY <= this.settings.offset && this.index > this.settings.pageSize ){
+            else if( this.scrollY <= this.settings.offset && this.index ){
                 if( this.firstLastIndexes[0] == 0 )
                     return;
 

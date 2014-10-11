@@ -17,9 +17,20 @@ Another benefit of this method is that the data can be be regularly kept up-to-d
 
 
 ## How to use:
-    // can be bound to any scrollable element or the `window` itself
-    $(window).endless({offset:'20%', callback: someFunc });
+    // the ONLY option you must pass is the "newPage" function which generates items and returns them
+    var OPTIONS = {
+        startIndex : 0,    // the first index to render (from your data set)
+        pageSize   : 10,   // # of items in a single batch
+        offset     : 200,  // the area from top and bottom of afterwhich to trigger new page render
+        content    : null, // where the items should be placed in
+        newPage    : generateItems  // function which generates a whole page and returns it (as a jQuery object)
+    }
 
-	function someFunc(){
-		// reached the end
-	}
+    endlessElm.infinite(OPTIONS);  // initialize the plugin
+
+    // must generates an array of DOM items.
+    // the "this" referes to the "infinite" instance
+
+    function generateItems(){
+
+    }
