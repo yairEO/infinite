@@ -157,10 +157,9 @@
 
             // scrolling down
             if( isScrollingDown ){
-                // if reached the point it should load the next page
+                // if reached NEXT page loading point
                 if( this.scrollY + viewHeight + this.settings.offset >= totalHeight ){
                     this.index = this.firstLastIndexes[1] + 1;
-
                     this.addPage();
                 }
             }
