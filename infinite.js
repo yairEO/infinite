@@ -101,9 +101,7 @@
             else{
                 if( index < 0 ) return;
 
-                N = this.settings.pageSize;
-                if( this.firstLastIndexes[0] < this.settings.pageSize )
-                    N = this.settings.pageSize - this.firstLastIndexes[0];
+                N = this.firstLastIndexes[0] < this.settings.pageSize ? this.firstLastIndexes[0] : this.settings.pageSize;
 
                 page = this.settings.newPage.call(this, N);
 
@@ -122,14 +120,18 @@
                 else
                     this.endlessElm[0].scrollTop += height;
 
-                tempItem = this.endlessContainer.children().slice(this.settings.pageSize, this.settings.pageSize*2);
-                tempItem.remove()
+                tempItem = this.endlessContainer.children();
+                if( tempItem.length >= this.settings.pageSize * 2 ){
+                    tempItem = this.endlessContainer.children().slice(-this.settings.pageSize);
+                    tempItem.remove();
+                }
             }
 
             // update indexes
             tempItem = this.endlessContainer.children();
             this.firstLastIndexes = [tempItem[0].tabIndex, tempItem.last()[0].tabIndex];
         },
+
 
         // onScroll/resize events callback
         // calls "addPage". Knows wether to Append or Prepend content

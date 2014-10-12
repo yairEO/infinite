@@ -35,7 +35,7 @@
                 "use strict";
 
                 var endlessElm = $(window),
-                    data = new Array(1000),
+                    data = new Array(105),
                     endlessContainer = $('.content'), // where to put the items
                     toggledItemsIndexes = {},
                     infiniteOptions;
@@ -100,7 +100,7 @@
                     N = N || this.settings.pageSize;
 
                     while( N-- ){
-                        if( index == this.firstLastIndexes[0] && this.firstLastIndexes[0] || index == data.length )
+                        if( index == data.length )
                             break;
 
                         html += '<div class="item'+ (toggledItemsIndexes[index] ? ' open' : '') + (N == 0 ? ' last' : '') +'" tabindex="' + index + '"><b>' + index + '</b></div>';
