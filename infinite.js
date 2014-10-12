@@ -2,7 +2,7 @@
 * Infinite scrolling
 * Version: 1.0.0
 *
-* Copyright 2014, Yair Even-Or, dropthebit.com
+* Copyright 2014, Yair Even-Or, http://dropthebit.com
 *
 * Homepage: http://yaireo.github.io/infinite/
 * Repository: git://github.com/yairEO/infinite.git
