@@ -1,8 +1,16 @@
-////////////////////////////////////////
-// smart infinite scroll
+/*
+* Infinite scrolling
+* Version: 1.0.0
+*
+* Copyright 2014, Yair Even-Or, dropthebit.com
+*
+* Homepage: http://yaireo.github.io/infinite/
+* Repository: git://github.com/yairEO/infinite.git
+* Licensed under GNU GPL v3, see LICENSE
+*/
+
 (function($, docElm){
     "use strict";
-
 
     var defaults = {
         startIndex : 0,    // the first index to render
@@ -114,7 +122,7 @@
                 else
                     this.endlessElm[0].scrollTop += height;
 
-                tempItem = this.endlessContainer.children().slice(-this.settings.pageSize);
+                tempItem = this.endlessContainer.children().slice(this.settings.pageSize, this.settings.pageSize*2);
                 tempItem.remove()
             }
 
