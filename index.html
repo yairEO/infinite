@@ -94,7 +94,7 @@
                     if( this.index >= data.length )
                         return false;
 
-                    var html = '',
+                    var htmlString = '',
                         index = this.index;
 
                     N = N || this.settings.pageSize;
@@ -103,11 +103,11 @@
                         if( index == data.length )
                             break;
 
-                        html += '<div class="item'+ (toggledItemsIndexes[index] ? ' open' : '') + (N == 0 ? ' last' : '') +'" tabindex="' + index + '"><b>' + index + '</b></div>';
+                        htmlString += '<div class="item'+ (toggledItemsIndexes[index] ? ' open' : '') + (N == 0 ? ' last' : '') +'" tabindex="' + index + '"><b>' + index + '</b></div>';
                         index++;
                     }
 
-                    return $.parseHTML(html);
+                    return $.parseHTML(htmlString);
                 }
 
             })();

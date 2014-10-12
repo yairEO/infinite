@@ -68,7 +68,7 @@
                 newItems, elmToRemove, height, temp,
                 N = this.settings.pageSize; // number of items to generate
 
-console.warn(method);
+
             method = method || 'append';
 
             // appending elements
