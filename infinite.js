@@ -15,7 +15,7 @@
     var defaults = {
         startIndex : 0,    // the first index to render
         pageSize   : 10,   // # of items in a single batch
-        offset     : 200,  // the area from top and bottom of after which to trigger new page render
+        offset     : 100,  // the area from top and bottom of after which to trigger new page render
         content    : null, // where the items should be appended to
         newPage    : null  // function which generates a whole page and returns it (as a jQuery object)
     }
@@ -62,28 +62,29 @@
         },
 
         // Addes a new page to the DOM
-        // Gets a page element from the "newPage" function and use the result.
+        // Gets new elements Array from the "newPage" function and use the result.
         addPage : function( method ){
             var index = this.index,
-                page, elmToRemove, height, tempItem,
+                newItems, elmToRemove, height, temp,
                 N = this.settings.pageSize; // number of items to generate
 
+console.warn(method);
             method = method || 'append';
 
             // appending elements
             if( method == 'append' ){
-                tempItem = this.endlessContainer.children();
-                if( tempItem.length >= this.settings.pageSize * 2 )
-                    elmToRemove = tempItem.slice(0, this.settings.pageSize);
+                temp = this.endlessContainer.children();
+                if( temp.length >= this.settings.pageSize * 2 )
+                    elmToRemove = temp.slice(0, this.settings.pageSize);
 
-                page = this.settings.newPage.call(this);
+                newItems = this.settings.newPage.call(this);
 
-                if( !page ) return;
+                if( !newItems ) return;
 
                 if( elmToRemove ){
                     /* adjust scroll */
-                    tempItem = elmToRemove.last();
-                    height = tempItem.position().top + tempItem.outerHeight(true);
+                    temp = elmToRemove.last();
+                    height = temp.position().top + temp.outerHeight(true);
 
                     if( this.el[0] === window ){
                         docElm.scrollTop -= height;
@@ -95,7 +96,7 @@
                     elmToRemove.remove();
                 }
 
-                this.endlessContainer[method]( page );
+                this.endlessContainer[method]( newItems );
             }
             // prepending elements
             else{
@@ -103,15 +104,15 @@
 
                 N = this.firstLastIndexes[0] < this.settings.pageSize ? this.firstLastIndexes[0] : this.settings.pageSize;
 
-                page = this.settings.newPage.call(this, N);
+                newItems = this.settings.newPage.call(this, N);
 
-                if( !page ) return;
+                if( !newItems ) return;
 
-                this.endlessContainer[method]( page );
+                this.endlessContainer[method]( newItems );
 
                 /* adjust scroll */
-                tempItem = $( page[page.length - 1] );
-                height = tempItem.position().top + tempItem.outerHeight(true);
+                temp = $( newItems[newItems.length - 1] );
+                height = temp.position().top + temp.outerHeight(true);
 
                 if( this.el[0] === window ){
                     docElm.scrollTop += height;
@@ -120,16 +121,17 @@
                 else
                     this.endlessElm[0].scrollTop += height;
 
-                tempItem = this.endlessContainer.children();
-                if( tempItem.length >= this.settings.pageSize * 2 ){
-                    tempItem = this.endlessContainer.children().slice(-this.settings.pageSize);
-                    tempItem.remove();
+                temp = this.endlessContainer.children();
+
+                if( temp.length > this.settings.pageSize * 2 ){
+                    temp = this.endlessContainer.children().slice(-this.settings.pageSize);
+                    temp.remove();
                 }
             }
 
             // update indexes
-            tempItem = this.endlessContainer.children();
-            this.firstLastIndexes = [tempItem[0].tabIndex, tempItem.last()[0].tabIndex];
+            temp = this.endlessContainer.children();
+            this.firstLastIndexes = [temp[0].tabIndex, temp.last()[0].tabIndex];
         },
 
 
