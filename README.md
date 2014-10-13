@@ -14,8 +14,8 @@ especially when the order of items keeps changing (high-scores table for example
 
 ## Benefits:
 
-Only a handful of items are being rendered to the screen at any given time,
-and the ones that were previously rendered (if any), whom aren't in the viewport anymore, are deleted and the detached nodes will eventually go to the GC.
+Only a handful of items are being rendered to the screen at any given time.
+The ones that were previously rendered (if any), whom aren't in the viewport anymore, are deleted and the detached nodes will eventually go to the GC.
 Another benefit of this method is that the data can be be regularly kept up-to-date (depending on your setup's interval) and will be rendered "fresh" all the time.
 
 
