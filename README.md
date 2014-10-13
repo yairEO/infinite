@@ -1,7 +1,7 @@
 Infinite - smart endless scrolling
 ========
 
-### DEMO PAGE - [DEMO PAGE](http://yaireo.github.io/infinite/)
+### [DEMO PAGE](http://yaireo.github.io/infinite/)
 
 
 Normal infinite scrolling solutions out there aren't good enough, because they don't handle performance issues.
