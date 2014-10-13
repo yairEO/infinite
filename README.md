@@ -12,7 +12,7 @@ the user scrolls and more elements are added, the slower the app/page gets.
 Another problem is data invalidation; Where elements are added to the DOM and it's very hard to update them,
 especially when the order of items keeps changing (high-scores table for example).
 
-## Why this code is better:
+## Benefits:
 
 Only a handful of items are being rendered to the screen at any given time,
 and the ones that were previously rendered (if any), whom aren't in the viewport anymore, are deleted and the detached nodes will eventually go to the GC.
