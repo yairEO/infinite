@@ -15,9 +15,10 @@
     var defaults = {
         startIndex : 0,    // the first index to render
         pageSize   : 10,   // # of items in a single batch
-        offset     : 100,  // the area from top and bottom of after which to trigger new page render
+        offset     : 12,   // the area from top and bottom (in %) of after which to trigger new page render
         content    : null, // where the items should be appended to
-        newPage    : null  // function which generates a whole page and returns it (as a jQuery object)
+        newPage    : null,  // function which generates a whole page and returns it (as a jQuery object)
+        fakeHeight : false
     }
 
     // jQuery plugin instantiation
@@ -40,18 +41,19 @@
         this.endlessElm = ($el[0] == window) ? $(docElm) : $el;
         this.endlessContainer = settings.content || this.endlessElm;
 
-        this.index             = settings.startIndex || 0;
+        this.index             = settings.fakeHeight ? 0 : settings.startIndex || 0;
         this.firstRenderedPage = null;
         this.lastScrollTop     = null;
         this.scrollY           = null;
         this.firstLastIndexes  = [0,0];
+        this.firstLastElements = [null,null];
+        this.fakeScrolls       = [0,0];
+        this.locked            = false;
 
         this.settings = $.extend({}, defaults, settings);
 
         // I use underscore's/lodash "throttle" method because it is commonly used.
-        this.el
-            .on('scroll.infinite', _.throttle(this.scrolling.bind(that), 150))
-            .on('resize.infinite', _.throttle(this.scrolling.bind(that), 150));
+        this.el.on('scroll.infinite resize.infinite', _.throttle(this.scrolling.bind(that), 150));
 
         this.addPage();
     }
@@ -65,39 +67,53 @@
         // Gets new elements Array from the "newPage" function and use the result.
         addPage : function( method ){
             var index = this.index,
-                newItems, elmToRemove, height, temp,
+                newItems, elmToRemove, height = 0, temp, parsedPadding,
                 N = this.settings.pageSize; // number of items to generate
-
 
             method = method || 'append';
 
+            //////////////////////////////
             // appending elements
             if( method == 'append' ){
                 temp = this.endlessContainer.children();
-                if( temp.length >= this.settings.pageSize * 2 )
-                    elmToRemove = temp.slice(0, this.settings.pageSize);
 
                 newItems = this.settings.newPage.call(this);
 
                 if( !newItems ) return;
 
-                if( elmToRemove ){
-                    /* adjust scroll */
-                    temp = elmToRemove.last();
-                    height = temp.position().top + temp.outerHeight(true);
+                if( temp.length >= this.settings.pageSize * 2 )
+                    elmToRemove = temp.slice(0, newItems.length); // remove the same amount of items that were added
 
-                    if( this.el[0] === window ){
-                        docElm.scrollTop -= height;
-                        document.body.scrollTop -= height;
+                if( elmToRemove && elmToRemove.length ){
+                    /* adjust scroll */
+                    if( this.settings.fakeHeight ){
+                        temp = elmToRemove.last();
+                        height = temp.position().top - this.fakeScrolls[0] + temp.outerHeight(true);
+                        parsedPadding = parseInt(this.endlessContainer.css('paddingBottom'));
+
+                        this.endlessContainer.css({'paddingTop': '+='+ height, 'paddingBottom': '-='+ (parsedPadding < height ? parsedPadding : height)});
+                        this.fakeScrolls[0] += height;
+                        this.fakeScrolls[1] = this.fakeScrolls[1] > height ? this.fakeScrolls[1] - height : 0;
                     }
-                    else
-                        this.endlessElm[0].scrollTop -= height;
+                    else{
+                        temp = elmToRemove.last();
+                        height = temp.position().top + temp.outerHeight(true);
+
+                        if( this.el[0] === window ){
+                            docElm.scrollTop -= height;
+                            document.body.scrollTop -= height;
+                        }
+                        else
+                            this.endlessElm[0].scrollTop -= height;
+                    }
 
                     elmToRemove.remove();
                 }
 
                 this.endlessContainer[method]( newItems );
             }
+
+            //////////////////////////////
             // prepending elements
             else{
                 if( index < 0 ) return;
@@ -111,20 +127,31 @@
                 this.endlessContainer[method]( newItems );
 
                 /* adjust scroll */
-                temp = $( newItems[newItems.length - 1] );
-                height = temp.position().top + temp.outerHeight(true);
+                if( this.settings.fakeHeight ){
+                    temp = $(newItems[newItems.length - 1]);
+                    height = temp.position().top - this.fakeScrolls[0] + temp.outerHeight(true);
+                    parsedPadding = parseInt(this.endlessContainer.css('paddingTop'));
 
-                if( this.el[0] === window ){
-                    docElm.scrollTop += height;
-                    document.body.scrollTop += height;
+                    this.endlessContainer.css({'paddingBottom': '+='+ height, 'paddingTop': '-='+ (parsedPadding < height ? parsedPadding : height) });
+                    this.fakeScrolls[0] = this.fakeScrolls[0] > height ? this.fakeScrolls[0] - height : 0;
+                    this.fakeScrolls[1] += height;
                 }
-                else
-                    this.endlessElm[0].scrollTop += height;
+                else{
+                    temp = $( newItems[newItems.length - 1] );
+                    height = temp.position().top + temp.outerHeight(true);
+
+                    if( this.el[0] === window ){
+                        docElm.scrollTop += height;
+                        document.body.scrollTop += height;
+                    }
+                    else
+                        this.endlessElm[0].scrollTop += height;
+                }
 
                 temp = this.endlessContainer.children();
 
                 if( temp.length > this.settings.pageSize * 2 ){
-                    temp = this.endlessContainer.children().slice(-this.settings.pageSize);
+                    temp = this.endlessContainer.children().slice(-N);
                     temp.remove();
                 }
             }
@@ -132,6 +159,7 @@
             // update indexes
             temp = this.endlessContainer.children();
             this.firstLastIndexes = [temp[0].tabIndex, temp.last()[0].tabIndex];
+            this.firstLastElements = [temp[0], temp.slice(-1)[0]];
         },
 
 
@@ -140,35 +168,24 @@
         scrolling : function(){
             var st = this.el.scrollTop(),
                 isScrollingDown = st > this.lastScrollTop,
-                pageToRestore,
-                viewHeight,
-                totalHeight,
-                index;
+                temp, pageToRestore, viewHeight, totalHeight;
 
             this.lastScrollTop = st;
-
-            // Get things right for later usage
-            if( this.el[0] === window ){
-                this.scrollY = window.pageYOffset || docElm.scrollTop;
-                viewHeight   = docElm.clientHeight;
-                totalHeight  = docElm.scrollHeight;
-            }
-            else{
-                this.scrollY = this.endlessElm[0].scrollTop;
-                viewHeight   = this.endlessElm[0].clientHeight;
-                totalHeight  = this.endlessElm[0].scrollHeight;
-            }
+            viewHeight = this.endlessElm[0].clientHeight;
 
             // scrolling down
             if( isScrollingDown ){
+                temp = this.firstLastElements[1].getBoundingClientRect().top;
                 // if reached NEXT page loading point
-                if( this.scrollY + viewHeight + this.settings.offset >= totalHeight ){
+                //if( this.scrollY + viewHeight + this.settings.offset >= (totalHeight - this.fakeScrolls[1]) ){
+                if( viewHeight / temp > (1 - this.settings.offset / 100) || temp < viewHeight ){
                     this.index = this.firstLastIndexes[1] + 1;
                     this.addPage();
                 }
             }
             // scrolling up
-            else if( this.scrollY <= this.settings.offset && this.index ){
+            //else if( (this.scrollY - this.fakeScrolls[0]) <= this.settings.offset && this.index ){
+            else if( this.firstLastElements[0].getBoundingClientRect().bottom / -viewHeight < (this.settings.offset / 100) && this.index ){
                 if( this.firstLastIndexes[0] == 0 )
                     return;
 

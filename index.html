@@ -17,7 +17,7 @@
             .content{ position:relative; }
 
             .content .item{ display:block; width:45%; height:100px; background:#EEE; border:2px solid #CCC; padding:10px; margin:10px auto; font-size:40px; color:#666; position:relative; cursor:pointer; transition:120ms; }
-            .content .item.small{ height:25px; font-size:11px; padding:0 5px; margin:1px auto; }
+            .content.small .item{ height:25px; font-size:11px; padding:0 5px; margin:1px auto; }
             .content .open{ height:150px; background:#DDD; color:black; }
             .content .last::after{ content:''; position:absolute; left:-20%; right:-20%; bottom:-8px; border-bottom:2px dashed red; }
         </style>
@@ -35,7 +35,7 @@
                 "use strict";
 
                 var endlessElm = $(window),
-                    data = new Array(105),
+                    data = new Array(103),
                     endlessContainer = $('.content'), // where to put the items
                     toggledItemsIndexes = {},
                     infiniteOptions;
@@ -52,7 +52,7 @@
 
                 endlessElm.infinite(infiniteOptions);
 
-                if( infiniteOptions.startIndex ){
+                if( infiniteOptions.startIndex && endlessContainer[0].firstChild ){
                     // toggledItemsIndexes[infiniteOptions.startIndex] = true;
                     endlessElm[0].scroll(0, $(endlessContainer[0].firstChild).offset().top - 10);
                 }
