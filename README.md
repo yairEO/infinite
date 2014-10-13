@@ -1,6 +1,9 @@
 Infinite - smart endless scrolling
 ========
 
+### DEMO PAGE - [DEMO PAGE](http://yaireo.github.io/infinite/)
+
+
 Normal infinite scrolling solutions out there aren't good enough, because they don't handle performance issues.
 Elements are being added to the DOM constantly and, as a result, memory usage increases, and things start to slow down.
 This problem gets even worse in mobile phones, becuase these machines are weaker than a "real" computer, so the more
