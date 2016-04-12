@@ -38,8 +38,8 @@ When the the amount of items in the queue starts to dwindle, fetch a new batch a
 
     endlessElm.infinite(options);  // initialize the plugin
 
-    // must generates an array of DOM items.
-    // the "this" refers to the "infinite" instance
+    // Generate an array of DOM items.
+    // The "this" refers to the "infinite" instance
     function generateItems(N){
         if( this.index >= queue.length )
             return false;
